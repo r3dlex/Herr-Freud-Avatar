@@ -11,10 +11,9 @@
  ╚══╝╚══╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝╚═╝  ╚═══╝ ╚═════╝
 ```
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/openclaw/herr-freud-psychology-agent/elixir.yml?style=flat-square)](https://github.com/openclaw/herr-freud-psychology-agent/actions)
-[![Coverage](https://img.shields.io/coverallsCoverage/github/openclaw/herr-freud-psychology-agent?style=flat-square)](https://coveralls.io)
-[![Elixir Version](https://img.shields.io/badge/Elixir-1.16-blue?style=flat-square)](https://elixir-lang.org)
-[![Docker Pulls](https://img.shields.io/docker/pulls/openclaw/herr-freud?style=flat-square)](https://hub.docker.com/r/openclaw/herr-freud)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/r3dlex/openclaw-herr-freud-psychology-agent/ci.yml?style=flat-square)](https://github.com/r3dlex/openclaw-herr-freud-psychology-agent/actions)
+[![Coverage](https://img.shields.io/coverallsCoverage/github/r3dlex/openclaw-herr-freud-psychology-agent?style=flat-square)](https://coveralls.io/github/r3dlex/openclaw-herr-freud-psychology-agent)
+[![Elixir Version](https://img.shields.io/badge/Elixir-1.17-blue?style=flat-square)](https://elixir-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal?style=flat-square)](#license)
 
 ---
