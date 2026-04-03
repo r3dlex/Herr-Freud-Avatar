@@ -72,7 +72,6 @@ defmodule HerrFreud.Cron.Handler do
   # Internal
 
   defp do_daily_nudge_check(state) do
-    # Check if we already sent a nudge today
     if state.last_nudge_date == Date.utc_today() do
       Logger.debug("Nudge already sent today, skipping")
       :ok
@@ -82,17 +81,21 @@ defmodule HerrFreud.Cron.Handler do
           generate_and_send_nudge("first_session")
 
         session ->
-          days_since =
-            Date.utc_today()
-            |> Date.diff(session.date || session.inserted_at |> DateTime.to_date())
-
-          if days_since >= @nudge_after_days do
-            generate_and_send_nudge("return_session")
-          else
-            Logger.debug("Last session was #{days_since} days ago, no nudge needed")
-            :ok
-          end
+          check_and_nudge_if_overdue(session)
       end
+    end
+  end
+
+  defp check_and_nudge_if_overdue(session) do
+    days_since =
+      Date.utc_today()
+      |> Date.diff(session.date || session.inserted_at |> DateTime.to_date())
+
+    if days_since >= @nudge_after_days do
+      generate_and_send_nudge("return_session")
+    else
+      Logger.debug("Last session was #{days_since} days ago, no nudge needed")
+      :ok
     end
   end
 
@@ -176,7 +179,7 @@ defmodule HerrFreud.Cron.Handler do
     delay =
       if DateTime.compare(target, now) == :lt do
         # Already past 20:00, schedule for tomorrow
-        DateTime.add(target, 86400) |> DateTime.diff(now)
+        DateTime.add(target, 86_400) |> DateTime.diff(now)
       else
         DateTime.diff(target, now)
       end
@@ -192,7 +195,7 @@ defmodule HerrFreud.Cron.Handler do
 
     target =
       %{now | hour: 9, minute: 0, second: 0, microsecond: {0, 0}}
-      |> DateTime.add(days_until_monday * 86400)
+      |> DateTime.add(days_until_monday * 86_400)
 
     delay = DateTime.diff(target, now)
 

@@ -3,7 +3,6 @@ defmodule HerrFreud.Memory.Distiller do
   Extracts key memory statements from a session transcript using the LLM.
   """
 
-
   @doc """
   Distill 1-3 memory statements from a session transcript.
   Returns {:ok, [memory_string]} or {:error, reason}.
@@ -30,7 +29,7 @@ defmodule HerrFreud.Memory.Distiller do
 
     llm_mod = Application.get_env(:herr_freud, :llm_mod, HerrFreud.LLM.MiniMax)
 
-    case apply(llm_mod, :chat, [messages, [temperature: 0.3, max_tokens: 512]]) do
+    case llm_mod.chat(messages, temperature: 0.3, max_tokens: 512) do
       {:ok, response} ->
         parse_distillation_response(response)
 

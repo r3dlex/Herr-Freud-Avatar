@@ -7,6 +7,7 @@ defmodule HerrFreud.Style.Manager do
   alias HerrFreud.Style.Manager.Style
 
   defmodule Style do
+    @moduledoc false
     @enforce_keys [:id, :name, :description, :config]
     defstruct [:id, :name, :description, :active, config: %{}]
 

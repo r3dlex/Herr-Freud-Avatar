@@ -5,6 +5,7 @@ defmodule HerrFreud.Profile.Store do
   alias HerrFreud.Repo
 
   defmodule Entry do
+    @moduledoc false
     defstruct key: nil, value: nil, updated_at: nil
   end
 

@@ -1,8 +1,8 @@
 defmodule HerrFreud.Memory.StoreTest do
   use ExUnit.Case, async: true
-  alias HerrFreud.Memory.Store
-  alias HerrFreud.Memory.Session
   alias HerrFreud.Memory.Memory
+  alias HerrFreud.Memory.Session
+  alias HerrFreud.Memory.Store
   alias HerrFreud.Repo
   import Ecto.Query
 
@@ -35,7 +35,7 @@ defmodule HerrFreud.Memory.StoreTest do
 
   # Past DateTime for testing delete_memories_older_than cutoff logic
   defp days_ago(days) do
-    DateTime.add(DateTime.utc_now(), -days * 86400, :second) |> DateTime.truncate(:second)
+    DateTime.add(DateTime.utc_now(), -days * 86_400, :second) |> DateTime.truncate(:second)
   end
 
   setup do
@@ -293,7 +293,7 @@ defmodule HerrFreud.Memory.StoreTest do
       {:ok, s2} = Store.insert_session(session_attrs())
 
       # Both inserted with future-dated inserted_at (beyond cutoff)
-      future = DateTime.add(DateTime.utc_now(), 60 * 86400, :second) |> DateTime.truncate(:second)
+      future = DateTime.add(DateTime.utc_now(), 60 * 86_400, :second) |> DateTime.truncate(:second)
       Store.insert_memory(memory_attrs(s1.id, %{content: "Old memory", id: nil, inserted_at: future}))
       Store.insert_memory(memory_attrs(s2.id, %{content: "New memory", id: nil, inserted_at: future}))
 
@@ -348,7 +348,7 @@ defmodule HerrFreud.Memory.StoreTest do
 
     test "returns {0, nil} when no memories match the cutoff" do
       {:ok, session} = Store.insert_session(session_attrs())
-      future = DateTime.add(DateTime.utc_now(), 60 * 86400, :second) |> DateTime.truncate(:second)
+      future = DateTime.add(DateTime.utc_now(), 60 * 86_400, :second) |> DateTime.truncate(:second)
       Store.insert_memory(memory_attrs(session.id, %{content: "Memory", id: nil, inserted_at: future}))
 
       future_date = Date.add(Date.utc_today(), 30) |> Date.to_iso8601()

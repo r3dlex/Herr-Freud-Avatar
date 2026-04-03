@@ -1,8 +1,8 @@
 defmodule HerrFreud.Memory.RetrieverTest do
   use ExUnit.Case, async: false
 
-  alias HerrFreud.Memory.Retriever
   alias HerrFreud.Memory.Memory
+  alias HerrFreud.Memory.Retriever
   alias HerrFreud.Memory.Session
   alias HerrFreud.Repo
   import Ecto.Query

@@ -13,7 +13,7 @@ defmodule HerrFreud.LLM.Stub do
   """
   @behaviour HerrFreud.LLM
 
-  @default_response "[\"Patient expressed ongoing conflict with their brother about boundaries.\", \"Patient mentioned they haven't been sleeping well for the past week.\"]"
+  @default_response ~S(["Patient expressed ongoing conflict with their brother about boundaries.", "Patient mentioned they haven't been sleeping well for the past week."])
 
   # ---------------------------------------------------------------------------
   # Agent-based mode (opt-in per-test)

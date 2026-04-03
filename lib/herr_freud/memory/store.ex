@@ -2,8 +2,8 @@ defmodule HerrFreud.Memory.Store do
   @moduledoc """
   CRUD operations for sessions and memories.
   """
+  alias HerrFreud.Memory.{Memory, Session}
   alias HerrFreud.Repo
-  alias HerrFreud.Memory.{Session, Memory}
   import Ecto.Query
 
   @doc """

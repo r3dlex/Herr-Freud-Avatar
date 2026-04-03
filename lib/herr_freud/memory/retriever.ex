@@ -4,8 +4,8 @@ defmodule HerrFreud.Memory.Retriever do
 
   score = (recency_weight * recency_score) + (similarity_weight * cosine_similarity)
   """
-  alias HerrFreud.Repo
   alias HerrFreud.Memory.Memory
+  alias HerrFreud.Repo
 
   @recency_weight Application.compile_env(:herr_freud, :herr_freud_memory_recency_weight, 0.4)
   @similarity_weight Application.compile_env(:herr_freud, :herr_freud_memory_similarity_weight, 0.6)

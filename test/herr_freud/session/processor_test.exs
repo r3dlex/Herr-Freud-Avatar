@@ -1,9 +1,9 @@
 defmodule HerrFreud.Session.ProcessorTest do
   use ExUnit.Case, async: false
 
-  alias HerrFreud.Session.Processor
-  alias HerrFreud.Memory.{Session, Memory}
+  alias HerrFreud.Memory.{Memory, Session}
   alias HerrFreud.Repo
+  alias HerrFreud.Session.Processor
   import Ecto.Query
 
   # Load meck mocks once at test module startup (async: false = one process)

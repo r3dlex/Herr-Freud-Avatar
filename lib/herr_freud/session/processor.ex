@@ -3,7 +3,9 @@ defmodule HerrFreud.Session.Processor do
   Orchestrates a full therapy session from input file to response.
   """
   require Logger
-  alias HerrFreud.{Memory.Store, Memory.Retriever, Output.Writer}
+  alias HerrFreud.Memory.Retriever
+  alias HerrFreud.Memory.Store
+  alias HerrFreud.Output.Writer
 
   @supported_audio_extensions [".mp3", ".wav", ".m4a", ".ogg", ".webm"]
 
@@ -38,7 +40,14 @@ defmodule HerrFreud.Session.Processor do
     with {:ok, stt_result} <- stt_mod().transcribe(file_path, nil),
          {:ok, english_transcript} <- translate_if_needed(stt_result.transcript, stt_result.detected_language),
          companion_notes <- read_companion_notes(file_path),
-         {:ok, response, memory_ids} <- generate_response_and_save(stt_result.transcript, english_transcript, stt_result.detected_language, "audio", companion_notes) do
+         {:ok, response, memory_ids} <-
+           generate_response_and_save(
+             stt_result.transcript,
+             english_transcript,
+             stt_result.detected_language,
+             "audio",
+             companion_notes
+           ) do
       Logger.info("Audio session processed successfully")
       {:ok, %{transcript: english_transcript, response: response, memory_ids: memory_ids}}
     end
@@ -51,9 +60,22 @@ defmodule HerrFreud.Session.Processor do
     with {:ok, content} <- File.read(file_path),
          {text, source_lang, companion_notes} <- parse_text_content(content, file_path),
          {:ok, english_transcript} <- translate_if_needed(text, source_lang),
-         {:ok, response, memory_ids} <- generate_response_and_save(text, english_transcript, source_lang, "text", companion_notes) do
+         {:ok, response, memory_ids} <-
+           generate_response_and_save(
+             text,
+             english_transcript,
+             source_lang,
+             "text",
+             companion_notes
+           ) do
       Logger.info("Text session processed successfully")
-      {:ok, %{transcript: english_transcript, source_lang: source_lang || "unknown", response: response, memory_ids: memory_ids}}
+      {:ok,
+       %{
+         transcript: english_transcript,
+         source_lang: source_lang || "unknown",
+         response: response,
+         memory_ids: memory_ids
+       }}
     end
   end
 
@@ -116,7 +138,13 @@ defmodule HerrFreud.Session.Processor do
     end
   end
 
-  defp generate_response_and_save(raw_transcript, english_transcript, source_lang, input_mode, companion_notes) do
+  defp generate_response_and_save(
+          raw_transcript,
+          english_transcript,
+          source_lang,
+          input_mode,
+          companion_notes
+        ) do
     session_id = Ecto.UUID.generate()
 
     # Get active style and patient profile

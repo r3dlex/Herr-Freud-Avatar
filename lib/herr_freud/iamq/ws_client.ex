@@ -105,11 +105,9 @@ defmodule HerrFreud.IAMQ.WsClient do
   end
 
   defp send_frame(frame) do
-    try do
-      WebSockex.send_frame(__MODULE__, {:text, frame})
-    rescue
-      _ -> :ok
-    end
+    WebSockex.send_frame(__MODULE__, {:text, frame})
+  rescue
+    _ -> :ok
   end
 
   defp handle_ws_message(msg) do
