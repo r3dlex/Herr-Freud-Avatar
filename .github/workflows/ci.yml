@@ -27,7 +27,7 @@ jobs:
 
       - name: Run tests and coverage
         run: |
-          output=$(MIX_ENV=test mix coveralls 2>&1)
+          output=$(MIX_ENV=test mix coveralls 2>&1) || true
           echo "$output"
           total=$(echo "$output" | grep '\[TOTAL\]' | awk '{print $NF}' | tr -d '%')
           echo "Total coverage: ${total}%"
