@@ -8,7 +8,7 @@ WORKDIR /app
 RUN mix local.hex --force && mix local.rebar --force
 
 COPY mix.exs mix.lock ./
-RUN mix deps.get
+RUN mix deps.get && mix deps.compile
 
 COPY lib/ ./lib/
 COPY config/ ./config/
