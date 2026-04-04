@@ -7,8 +7,13 @@ services:
       dockerfile: Dockerfile
     env_file:
       - .env
+    environment:
+      - EMBEDDINGS_URL=http://host.docker.internal:18795
     volumes:
       - ${HERR_FREUD_DATA_FOLDER:-./data}:/data
+      - ../skills-cli:/skills-cli:ro
+      - ../skills:/workspace/skills:rw
+      - ./skills:/agent/skills:rw
     depends_on:
       - stt-sidecar
     restart: unless-stopped

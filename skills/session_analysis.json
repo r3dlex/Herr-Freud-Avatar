@@ -1,0 +1,13 @@
+{
+  "name": "session_analysis",
+  "version": 1,
+  "quality_score": 0.5,
+  "description": "Analyze a therapy session transcript",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "session_id": {"type": "string", "description": "ID of the therapy session to analyze"}
+    },
+    "required": ["session_id"]
+  }
+}

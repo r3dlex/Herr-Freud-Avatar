@@ -23,4 +23,6 @@ if config_env() == :prod do
     environment variable HERR_FREUD_DATA_FOLDER is missing.
     """
   config :herr_freud, :herr_freud_data_folder, data_folder
+
+  config :herr_freud, :embeddings_mod, HerrFreud.Embeddings.Centralized
 end

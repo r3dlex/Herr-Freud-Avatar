@@ -21,6 +21,7 @@ RUN mix release
 FROM alpine:3.18 AS releaser
 
 RUN apk add --no-cache openssl ncurses-libs libcrypto3 libncursesw6
+RUN apk add --no-cache python3 py3-pip
 
 WORKDIR /app
 
