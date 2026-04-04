@@ -23,16 +23,15 @@ defmodule HerrFreud.LLM.MiniMax do
       {"Content-Type", "application/json"}
     ]
 
-    case :hackney.post(
-           "#{@api_base}/text/chatcompletion_v2",
-           headers,
-           Jason.encode!(body),
-           [:with_body]
+    case Req.post("#{@api_base}/text/chatcompletion_v2",
+           headers: headers,
+           body: Jason.encode!(body),
+           decode_body: false
          ) do
-      {:ok, status, _headers, body} when status in 200..299 ->
+      {:ok, %{status: status, body: body}} when status in 200..299 ->
         {:ok, parse_chat_response(body)}
 
-      {:ok, status, _headers, body} ->
+      {:ok, %{status: status, body: body}} ->
         {:error, {:http_error, status, body}}
 
       {:error, reason} ->

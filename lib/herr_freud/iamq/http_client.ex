@@ -10,7 +10,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
 
   @poll_interval Application.compile_env(:herr_freud, :iamq_poll_ms, 60_000)
   @agent_id Application.compile_env(:herr_freud, :iamq_agent_id, "herr_freud_agent")
-  @queue_path Application.compile_env(:herr_freud, :iamq_queue_path)
+  @queue_path Application.get_env(:herr_freud, :iamq_queue_path)
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -102,18 +102,17 @@ defmodule HerrFreud.IAMQ.HttpClient do
       {"X-Agent-ID", @agent_id}
     ]
 
-    case :hackney.post(
-           state.outbox_url,
-           headers,
-           Jason.encode!(body),
-           [:with_body]
+    case Req.post(state.outbox_url,
+           headers: headers,
+           body: Jason.encode!(body),
+           decode_body: false
          ) do
-      {:ok, status, _headers, _body} when status in 200..299 ->
+      {:ok, %{status: status}} when status in 200..299 ->
         Logger.info("IAMQ message sent: #{inspect(message.subject)}")
         :ok
 
-      {:ok, status, _headers, body} ->
-        Logger.warning("IAMQ send failed (#{status}): #{body}")
+      {:ok, %{status: status, body: resp_body}} ->
+        Logger.warning("IAMQ send failed (#{status}): #{resp_body}")
         {:error, {:http_error, status}}
 
       {:error, reason} ->
@@ -125,8 +124,8 @@ defmodule HerrFreud.IAMQ.HttpClient do
   defp do_poll_inbox(state) do
     headers = [{"X-Agent-ID", @agent_id}]
 
-    case :hackney.get(state.inbox_url, headers, [:with_body]) do
-      {:ok, 200, _headers, body} ->
+    case Req.get(state.inbox_url, headers: headers, decode_body: false) do
+      {:ok, %{status: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, messages} when is_list(messages) ->
             Enum.each(messages, &handle_inbox_message/1)
@@ -135,7 +134,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
             :ok
         end
 
-      {:ok, _, _, _} ->
+      {:ok, _} ->
         :ok
 
       {:error, reason} ->

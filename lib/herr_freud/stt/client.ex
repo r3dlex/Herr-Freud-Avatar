@@ -15,16 +15,15 @@ defmodule HerrFreud.STT.Client do
 
     headers = [{"Content-Type", "application/json"}]
 
-    case :hackney.post(
-           "#{@sidecar_url}/transcribe",
-           headers,
-           Jason.encode!(body),
-           [:with_body]
+    case Req.post("#{@sidecar_url}/transcribe",
+           headers: headers,
+           body: Jason.encode!(body),
+           decode_body: false
          ) do
-      {:ok, status, _headers, body} when status in 200..299 ->
+      {:ok, %{status: status, body: body}} when status in 200..299 ->
         parse_transcribe_response(body)
 
-      {:ok, status, _headers, body} ->
+      {:ok, %{status: status, body: body}} ->
         {:error, {:http_error, status, body}}
 
       {:error, reason} ->

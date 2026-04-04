@@ -31,7 +31,6 @@ defmodule HerrFreud.MixProject do
       {:websockex, "~> 0.5"},
       {:quantum, "~> 3.5"},
       {:jason, "~> 1.4"},
-      {:hackney, "~> 1.18"},
       {:fs, "~> 11.4"},
       {:mime, "~> 2.0"},
       {:yaml_elixir, "~> 2.9"},

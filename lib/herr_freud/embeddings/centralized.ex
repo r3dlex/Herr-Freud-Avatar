@@ -13,13 +13,12 @@ defmodule HerrFreud.Embeddings.Centralized do
     url = System.get_env("EMBEDDINGS_URL", "http://host.docker.internal:18795")
     body = Jason.encode!(%{texts: [text], normalize: true})
 
-    case :hackney.post(
-           "#{url}/embed",
-           [{"Content-Type", "application/json"}, {"Accept", "application/json"}],
-           body,
-           [:with_body]
+    case Req.post("#{url}/embed",
+           headers: [{"Content-Type", "application/json"}, {"Accept", "application/json"}],
+           body: body,
+           decode_body: false
          ) do
-      {:ok, 200, _headers, response_body} ->
+      {:ok, %{status: 200, body: response_body}} ->
         case Jason.decode(response_body) do
           {:ok, %{"embeddings" => [embedding | _]}} ->
             {:ok, embedding}
@@ -31,7 +30,7 @@ defmodule HerrFreud.Embeddings.Centralized do
             {:error, "Failed to decode response: #{inspect(reason)}"}
         end
 
-      {:ok, status, _headers, body} ->
+      {:ok, %{status: status, body: body}} ->
         {:error, "Embeddings service returned status #{status}: #{body}"}
 
       {:error, reason} ->
