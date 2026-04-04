@@ -2,7 +2,7 @@
   <img src="assets/banner.svg" alt="Herr Freud" width="600">
 </p>
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/r3dlex/openclaw-herr-freud-psychology-agent/ci.yml?style=flat-square)](https://github.com/r3dlex/openclaw-herr-freud-psychology-agent/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/r3dlex/openclaw-herr-freud-agent/ci.yml?style=flat-square)](https://github.com/r3dlex/openclaw-herr-freud-agent/actions)
 [![Elixir Version](https://img.shields.io/badge/Elixir-1.17-blue?style=flat-square)](https://elixir-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-teal?style=flat-square)](#license)
 
@@ -35,7 +35,7 @@ Skills auto-improve via post-execution hooks and nightly batch review.
 ## Architecture
 
 - **Language**: Elixir/OTP
-- **IAMQ ID**: none (communicates via IAMQ but has no registered agent ID)
+- **IAMQ ID**: `herr_freud_agent`
 - **Runtime**: Docker
 
 | Module | Role |
@@ -81,6 +81,7 @@ Drop `.txt` or `.md` files into `data/input/` to trigger a session. Audio files 
 
 ## Related
 
+- [openclaw-herr-freud-agent](https://github.com/r3dlex/openclaw-herr-freud-agent) — this repository
 - [openclaw-inter-agent-message-queue](https://github.com/r3dlex/openclaw-inter-agent-message-queue) — IAMQ message bus and agent registry
 - [openclaw-librarian-agent](https://github.com/r3dlex/openclaw-librarian-agent) — Obsidian vault archival
 
