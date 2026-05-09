@@ -8,9 +8,13 @@ services:
     env_file:
       - .env
     environment:
-      - IAMQ_HTTP_URL=${IAMQ_HTTP_URL:-http://host.docker.internal:18790}
-      - IAMQ_WS_URL=${IAMQ_WS_URL:-ws://host.docker.internal:18793/ws}
+      - IAMQ_HTTP_URL=http://host.docker.internal:18790
+      - IAMQ_WS_URL=ws://host.docker.internal:18793/ws
       - IAMQ_AGENT_ID=${IAMQ_AGENT_ID:-herr_freud_agent}
+      - HERR_FREUD_DATA_FOLDER=${HERR_FREUD_DATA_FOLDER:-./data}
+      - HERR_FREUD_DB_PATH=${HERR_FREUD_DB_PATH:-/data/herr_freud.db}
+      - MINIMAX_API_KEY=${MINIMAX_API_KEY}
+      - STT_SIDECAR_URL=http://stt-sidecar:9001
       - EMBEDDINGS_URL=http://host.docker.internal:18795
     volumes:
       - ${HERR_FREUD_DATA_FOLDER:-./data}:/data
@@ -19,6 +23,8 @@ services:
       - ./skills:/agent/skills:rw
     depends_on:
       - stt-sidecar
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - herr-freud-net

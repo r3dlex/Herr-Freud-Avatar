@@ -21,7 +21,7 @@ defmodule HerrFreud.Embeddings.MiniMax do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post("#{@api_base}/embeddings",
+    case HerrFreud.HTTP.post("#{@api_base}/embeddings",
            headers: headers,
            body: Jason.encode!(body),
            decode_body: false

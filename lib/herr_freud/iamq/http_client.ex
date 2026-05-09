@@ -10,7 +10,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
 
   @poll_interval Application.compile_env(:herr_freud, :iamq_poll_ms, 60_000)
   @agent_id Application.compile_env(:herr_freud, :iamq_agent_id, "herr_freud_agent")
-  @queue_path Application.get_env(:herr_freud, :iamq_queue_path)
+  # iamq_queue_path is runtime-only (optional), accessed via Application.get_env/3 below
 
   def start_link(_opts) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -102,7 +102,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
       {"X-Agent-ID", @agent_id}
     ]
 
-    case Req.post(state.outbox_url,
+    case HerrFreud.HTTP.post(state.outbox_url,
            headers: headers,
            body: Jason.encode!(body),
            decode_body: false
@@ -124,7 +124,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
   defp do_poll_inbox(state) do
     headers = [{"X-Agent-ID", @agent_id}]
 
-    case Req.get(state.inbox_url, headers: headers, decode_body: false) do
+    case HerrFreud.HTTP.get(state.inbox_url, headers: headers, decode_body: false) do
       {:ok, %{status: 200, body: body}} ->
         case Jason.decode(body) do
           {:ok, messages} when is_list(messages) ->
@@ -212,7 +212,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
   defp llm_mod, do: Application.get_env(:herr_freud, :llm_mod, HerrFreud.LLM.MiniMax)
 
   defp persist_to_file_fallback(message) do
-    fallback_dir = Path.dirname(@queue_path || "/tmp/iamq_fallback.json")
+    fallback_dir = Path.dirname(Application.get_env(:herr_freud, :iamq_queue_path) || "/tmp/iamq_fallback.json")
     File.mkdir_p!(fallback_dir)
 
     entry = %{
@@ -226,7 +226,7 @@ defmodule HerrFreud.IAMQ.HttpClient do
   end
 
   defp read_from_file_fallback do
-    fallback_file = Path.join(Path.dirname(@queue_path || "/tmp"), "iamq_inbox_fallback.jsonl")
+    fallback_file = Path.join(Path.dirname(Application.get_env(:herr_freud, :iamq_queue_path) || "/tmp"), "iamq_inbox_fallback.jsonl")
 
     if File.exists?(fallback_file) do
       fallback_file

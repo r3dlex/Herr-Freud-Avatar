@@ -21,19 +21,41 @@ defmodule HerrFreud.Input.Watcher do
     # Ensure directory exists
     File.mkdir_p!(watch_dir)
 
-    {:ok, %{watch_dir: watch_dir, debounce_timers: %{}}, {:continue, :start_watching}}
+    {:ok, %{watch_dir: watch_dir, debounce_timers: %{}, watcher: nil}, {:continue, :start_watching}}
   end
 
   @impl true
   def handle_continue(:start_watching, %{watch_dir: watch_dir} = state) do
-    # Use FileSystem to watch the directory
-    {:ok, watcher} = FileSystem.start_link(dirs: [watch_dir])
+    # Use FileSystem to watch the directory. If FileSystem is not available
+    # (e.g. port driver unavailable in container), log a warning and continue
+    # without watching — the cron scheduler still runs independently.
+    case start_filesystem_watcher(watch_dir) do
+      {:ok, watcher} ->
+        FileSystem.subscribe(watcher)
+        Logger.info("Input.Watcher started watching: #{watch_dir}")
+        {:noreply, %{state | watcher: watcher}}
 
-    FileSystem.subscribe(watcher)
+      {:error, reason} ->
+        Logger.warning("Input.Watcher skipped (FileSystem unavailable: #{inspect(reason)}). File watching disabled.")
+        {:noreply, state}
+    end
+  end
 
-    Logger.info("Input.Watcher started watching: #{watch_dir}")
+  defp start_filesystem_watcher(watch_dir) do
+    try do
+      case Code.ensure_loaded(FileSystem) do
+        {:module, mod} ->
+          case apply(mod, :start_link, [[dirs: [watch_dir]]]) do
+            {:ok, watcher} -> {:ok, watcher}
+            other -> {:error, other}
+          end
 
-    {:noreply, %{state | watch_dir: watch_dir, watcher: watcher}}
+        {:error, _} ->
+          {:error, :module_not_available}
+      end
+    rescue
+      e -> {:error, e}
+    end
   end
 
   @impl true

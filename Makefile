@@ -13,18 +13,18 @@ help:
 	@echo "  restart  — Restart agent (down + up)"
 
 up:
-	docker compose -f $(COMPOSE_FILE) up -d
+	docker-compose -f $(COMPOSE_FILE) up -d
 
 down:
-	docker compose -f $(COMPOSE_FILE) down
+	docker-compose -f $(COMPOSE_FILE) down
 
 logs:
-	docker compose -f $(COMPOSE_FILE) logs -f
+	docker-compose -f $(COMPOSE_FILE) logs -f
 
 shell:
-	docker compose -f $(COMPOSE_FILE) exec herr-freud sh
+	docker-compose -f $(COMPOSE_FILE) exec herr-freud sh
 
 build:
-	docker compose -f $(COMPOSE_FILE) build
+	docker-compose -f $(COMPOSE_FILE) build
 
 restart: down up

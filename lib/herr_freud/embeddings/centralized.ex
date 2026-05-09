@@ -13,7 +13,7 @@ defmodule HerrFreud.Embeddings.Centralized do
     url = System.get_env("EMBEDDINGS_URL", "http://host.docker.internal:18795")
     body = Jason.encode!(%{texts: [text], normalize: true})
 
-    case Req.post("#{url}/embed",
+    case HerrFreud.HTTP.post("#{url}/embed",
            headers: [{"Content-Type", "application/json"}, {"Accept", "application/json"}],
            body: body,
            decode_body: false

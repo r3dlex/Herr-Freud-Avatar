@@ -23,7 +23,7 @@ defmodule HerrFreud.LLM.MiniMax do
       {"Content-Type", "application/json"}
     ]
 
-    case Req.post("#{@api_base}/text/chatcompletion_v2",
+    case HerrFreud.HTTP.post("#{@api_base}/text/chatcompletion_v2",
            headers: headers,
            body: Jason.encode!(body),
            decode_body: false

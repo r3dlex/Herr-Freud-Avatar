@@ -3,5 +3,5 @@ defmodule HerrFreud.Embeddings.Stub do
   @behaviour HerrFreud.Embeddings
 
   @impl true
-  def embed(_text), do: {:ok, [0.0, 0.0, 0.0, 0.0, 0.0]}
+  def embed(_text), do: {:ok, List.duplicate(0.0, 384)}
 end

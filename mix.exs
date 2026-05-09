@@ -16,7 +16,7 @@ defmodule HerrFreud.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :crypto],
+      extra_applications: [:logger, :crypto, :inets, :ssl, :nx, :fs],
       mod: {HerrFreud.Application, []}
     ]
   end
@@ -33,14 +33,14 @@ defmodule HerrFreud.MixProject do
       {:jason, "~> 1.4"},
       {:fs, "~> 11.4"},
       {:mime, "~> 2.0"},
-      {:yaml_elixir, "~> 2.9"},
-      {:req, "~> 0.4"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
       {:bypass, "~> 2.1", only: :test},
       {:stream_data, "~> 1.0", only: :test},
-      {:meck, "~> 1.1", only: :test}
+      {:meck, "~> 1.1", only: :test},
+      {:nx, github: "elixir-nx/nx", sparse: "nx", override: true},
+      {:bumblebee, github: "elixir-nx/bumblebee"}
     ]
   end
 

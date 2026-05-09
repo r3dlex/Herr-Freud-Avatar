@@ -15,7 +15,7 @@ defmodule HerrFreud.STT.Client do
 
     headers = [{"Content-Type", "application/json"}]
 
-    case Req.post("#{@sidecar_url}/transcribe",
+    case HerrFreud.HTTP.post("#{@sidecar_url}/transcribe",
            headers: headers,
            body: Jason.encode!(body),
            decode_body: false

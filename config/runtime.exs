@@ -24,5 +24,9 @@ if config_env() == :prod do
     """
   config :herr_freud, :herr_freud_data_folder, data_folder
 
-  config :herr_freud, :embeddings_mod, HerrFreud.Embeddings.Centralized
+  # Bumblebee/EXLA requires cmake to be installed in the Docker build environment
+  # (EXLA is a NIF that wraps XLA, and its system_tex feature links libdeflate).
+  # If local Bumblebee fails to load, the application falls back to the centralized
+  # embeddings service via the EMBEDDINGS_URL environment variable.
+  config :herr_freud, :embeddings_mod, HerrFreud.Embeddings.Bumblebee
 end

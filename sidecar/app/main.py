@@ -13,15 +13,15 @@ import uvicorn
 
 app = FastAPI(title="Herr Freud STT Sidecar")
 
-MODEL_SIZE = os.getenv("STT_MODEL", "large-v3")
+MODEL_SIZE = os.getenv("STT_MODEL", "small")
 model = None
 
 
 @app.on_event("startup")
 def load_model():
     global model
-    compute_type = "float16"  # or "int8" for faster CPU inference
-    model = WhisperModel(MODEL_SIZE, compute_type=compute_type)
+    compute_type = os.getenv("STT_COMPUTE_TYPE", "float32")  # "float16" for GPU, "int8" for CPU; Mac Mini uses float32
+    model = WhisperModel(MODEL_SIZE, compute_type=compute_type, device="cpu")
     print(f"Whisper model '{MODEL_SIZE}' loaded")
 
 

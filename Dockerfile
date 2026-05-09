@@ -1,13 +1,18 @@
-FROM elixir:1.18-otp-27-alpine AS builder
+FROM elixir:1.18-slim AS builder
 
-RUN apk add --no-cache build-base git
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential git ca-certificates libsqlite3-dev cmake libdeflate-dev && rm -rf /var/lib/apt/lists/*
+
+ENV MIX_ENV=prod \
+    EXQLITE_USE_SYSTEM=1
 
 WORKDIR /app
 
 COPY mix.exs mix.lock* ./
+COPY IDENTITY.md SOUL.md ./
 RUN mix local.hex --force && \
     mix local.rebar --force && \
-    mix deps.get && \
+    mix deps.get --only prod && \
     mix deps.compile
 
 COPY lib/ ./lib/
@@ -17,9 +22,10 @@ COPY priv/ ./priv/
 RUN mix compile
 
 # --- Runtime ---
-FROM elixir:1.18-otp-27-alpine
+FROM elixir:1.18-slim
 
-RUN apk add --no-cache python3 bash tini
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 tini libsqlite3-0 git inotify-tools && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -30,9 +36,11 @@ COPY --from=builder /app/mix.lock /app/
 COPY --from=builder /app/config /app/config
 COPY --from=builder /app/lib /app/lib
 COPY --from=builder /app/priv /app/priv
+COPY --from=builder /app/IDENTITY.md /app/SOUL.md /app/
 COPY --from=builder /root/.mix /root/.mix
 
-ENV TERM=xterm
+ENV MIX_ENV=prod \
+    TERM=xterm
 
 ENTRYPOINT ["tini", "--"]
 CMD ["mix", "run", "--no-halt"]

@@ -17,12 +17,15 @@ defmodule HerrFreud.IAMQ.WsClient do
   @impl true
   def handle_connect(_conn, state) do
     Logger.info("IAMQ WebSocket connected")
-    register()
+
+    # Register asynchronously to avoid deadlock — send_frame from handle_connect
+    # would synchronously call the socket owner, causing "process attempted to call itself"
+    send(self(), :do_register)
 
     # Start heartbeat
     heartbeat_timer = schedule_heartbeat()
 
-    {:ok, %{state | heartbeat_timer: heartbeat_timer}}
+    {:ok, Map.put(state, :heartbeat_timer, heartbeat_timer)}
   end
 
   @impl true
@@ -36,7 +39,7 @@ defmodule HerrFreud.IAMQ.WsClient do
     # Attempt reconnect
     schedule_reconnect()
 
-    {:ok, %{state | heartbeat_timer: nil}}
+    {:ok, Map.put(state, :heartbeat_timer, nil)}
   end
 
   @impl true
@@ -54,10 +57,38 @@ defmodule HerrFreud.IAMQ.WsClient do
   def handle_frame(_frame, state), do: {:ok, state}
 
   @impl true
+  def handle_info(:do_register, state) do
+    # Spawn a process to send the registration frame — send_frame cannot be called
+    # from within the WS client process itself (WebSockex raises CallingSelfError).
+    spawn(fn ->
+      register_msg = %{
+        "action" => "register",
+        "agent_id" => @agent_id,
+        "capabilities" => [
+          "diary_intake",
+          "session_response",
+          "memory_recall",
+          "style_switch",
+          "patient_nudge",
+          "session_archive"
+        ]
+      }
+
+      try do
+        WebSockex.send_frame(__MODULE__, {:text, Jason.encode!(register_msg)})
+      rescue
+        e ->
+          Logger.warning("WS registration frame failed: #{inspect(e)}")
+      end
+    end)
+
+    {:ok, state}
+  end
+
   def handle_info(:heartbeat, state) do
     send_heartbeat()
     timer = schedule_heartbeat()
-    {:ok, %{state | heartbeat_timer: timer}}
+    {:ok, Map.put(state, :heartbeat_timer, timer)}
   end
 
   def handle_info(:reconnect, state) do
@@ -66,34 +97,26 @@ defmodule HerrFreud.IAMQ.WsClient do
     {:ok, state}
   end
 
-  defp register do
-    register_msg = %{
-      agent_id: @agent_id,
-      capabilities: [
-        "diary_intake",
-        "session_response",
-        "memory_recall",
-        "style_switch",
-        "patient_nudge",
-        "session_archive"
-      ]
-    }
-
-    send_frame(Jason.encode!(register_msg))
-  end
+  # Removed: register/0 is now inline in handle_info(:do_register) using spawn
+  # to avoid CallingSelfError when calling WebSockex.send_frame from self.
 
   defp send_heartbeat do
+    # Spawn to avoid CallingSelfError — send_frame cannot be called from self
     heartbeat_msg = %{
-      type: "heartbeat",
-      agent_id: @agent_id,
-      timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
+      "action" => "heartbeat",
+      "agent_id" => @agent_id,
+      "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()
     }
 
-    try do
-      send_frame(Jason.encode!(heartbeat_msg))
-    rescue
-      _ -> :ok
-    end
+    spawn(fn ->
+      try do
+        WebSockex.send_frame(__MODULE__, {:text, Jason.encode!(heartbeat_msg)})
+      rescue
+        _ -> :ok
+      end
+    end)
+
+    :ok
   end
 
   defp schedule_heartbeat do
@@ -104,13 +127,11 @@ defmodule HerrFreud.IAMQ.WsClient do
     Process.send_after(self(), :reconnect, 30_000)
   end
 
-  defp send_frame(frame) do
-    WebSockex.send_frame(__MODULE__, {:text, frame})
-  rescue
-    _ -> :ok
-  end
+  # Removed: send_frame/1 cannot be called from within the WS client process
+  # (WebSockex.send_frame raises CallingSelfError when client == self()).
+  # Use spawn(fn -> WebSockex.send_frame(pid, {:text, data}) end) instead.
 
-  defp handle_ws_message(msg) do
+  defp handle_ws_message(msg) when is_map(msg) do
     subject = msg["subject"]
 
     case subject do
@@ -163,22 +184,34 @@ defmodule HerrFreud.IAMQ.WsClient do
 
   defp send_direct_reply(to_agent, text) do
     reply = %{
-      from: @agent_id,
-      to: to_agent,
-      type: "reply",
-      subject: "direct_reply",
-      body: %{
-        text: text,
-        timestamp: DateTime.utc_now() |> DateTime.to_iso8601()
+      "action" => "send",
+      "from" => @agent_id,
+      "to" => to_agent,
+      "type" => "reply",
+      "subject" => "direct_reply",
+      "body" => %{
+        "text" => text,
+        "timestamp" => DateTime.utc_now() |> DateTime.to_iso8601()
       }
     }
 
-    try do
-      send_frame(Jason.encode!(reply))
-    rescue
-      _ -> :ok
-    end
+    # Spawn to avoid CallingSelfError — send_frame cannot be called from self
+    spawn(fn ->
+      try do
+        WebSockex.send_frame(__MODULE__, {:text, Jason.encode!(reply)})
+      rescue
+        _ -> :ok
+      end
+    end)
+
+    :ok
   end
 
   defp llm_mod, do: Application.get_env(:herr_freud, :llm_mod, HerrFreud.LLM.MiniMax)
+
+  @impl true
+  def terminate(reason, state) do
+    Logger.warning("IAMQ WsClient terminating: reason=#{inspect(reason)}, state_keys=#{inspect(Map.keys(state))}")
+    :ok
+  end
 end
